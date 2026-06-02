@@ -1,0 +1,213 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          String    @default("customer") // customer | admin | vendor
+  avatar        String?
+  language      String    @default("en")
+  phone         String?
+  loyaltyPoints Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bookings    Booking[]
+  reviews     Review[]
+  rewards     Reward[]
+}
+
+model Destination {
+  id              String   @id @default(cuid())
+  name            String
+  state           String
+  country         String   @default("India")
+  description     String
+  shortDesc       String
+  coverImage      String
+  images          String   // JSON array of image URLs
+  season          String   // summer | winter | monsoon | all
+  isLesserKnown   Boolean  @default(false)
+  isTrending      Boolean  @default(false)
+  rating          Float    @default(0)
+  totalReviews    Int      @default(0)
+  latitude        Float?
+  longitude       Float?
+  createdAt       DateTime @default(now())
+
+  hotels        Hotel[]
+  restaurants   Restaurant[]
+  transports    Transport[]
+  packages      TravelPackage[]
+  virtualTour   VirtualTour?
+  reviews       Review[]
+}
+
+model Hotel {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // hotel | hostel | resort | homestay
+  destinationId String
+  description   String
+  address       String
+  coverImage    String
+  images        String   // JSON array
+  pricePerNight Float
+  rating        Float    @default(0)
+  totalReviews  Int      @default(0)
+  facilities    String   // JSON array: wifi, pool, gym, etc.
+  phone         String?
+  email         String?
+  website       String?
+  isAvailable   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model Restaurant {
+  id            String   @id @default(cuid())
+  name          String
+  destinationId String
+  description   String
+  cuisineType   String   // local | fusion | traditional | street food
+  speciality    String
+  coverImage    String
+  images        String   // JSON array
+  priceRange    String   // budget | moderate | premium
+  rating        Float    @default(0)
+  totalReviews  Int      @default(0)
+  address       String
+  phone         String?
+  isAvailable   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  reviews     Review[]
+}
+
+model Transport {
+  id            String   @id @default(cuid())
+  name          String
+  type          String   // bus | taxi | auto | bike | boat | train
+  destinationId String
+  description   String
+  coverImage    String
+  pricePerDay   Float
+  capacity      Int
+  rating        Float    @default(0)
+  totalReviews  Int      @default(0)
+  ownerName     String
+  ownerPhone    String
+  isIndividual  Boolean  @default(false) // true = individual owner, false = agency
+  isAvailable   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model TravelPackage {
+  id            String   @id @default(cuid())
+  name          String
+  destinationId String
+  description   String
+  coverImage    String
+  images        String   // JSON array
+  price         Float
+  duration      Int      // number of days
+  isMini        Boolean  @default(false) // mini package for nearby places
+  includes      String   // JSON array: hotel, food, transport, guide
+  highlights    String   // JSON array of highlights
+  rating        Float    @default(0)
+  totalReviews  Int      @default(0)
+  maxPeople     Int      @default(10)
+  isAvailable   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+  bookings    Booking[]
+  reviews     Review[]
+}
+
+model VirtualTour {
+  id            String   @id @default(cuid())
+  destinationId String   @unique
+  videoUrl      String?
+  images360     String   // JSON array of 360 image URLs
+  description   String
+  highlights    String   // JSON array
+  createdAt     DateTime @default(now())
+
+  destination Destination @relation(fields: [destinationId], references: [id])
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  userId          String
+  type            String   // hotel | transport | package
+  hotelId         String?
+  transportId     String?
+  packageId       String?
+  checkIn         DateTime?
+  checkOut        DateTime?
+  bookingDate     DateTime @default(now())
+  people          Int      @default(1)
+  totalAmount     Float
+  status          String   @default("pending") // pending | confirmed | cancelled | completed
+  paymentStatus   String   @default("pending") // pending | paid | refunded
+  specialRequests String?
+  createdAt       DateTime @default(now())
+
+  user      User           @relation(fields: [userId], references: [id])
+  hotel     Hotel?         @relation(fields: [hotelId], references: [id])
+  transport Transport?     @relation(fields: [transportId], references: [id])
+  package   TravelPackage? @relation(fields: [packageId], references: [id])
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  userId        String
+  type          String   // destination | hotel | restaurant | transport | package
+  destinationId String?
+  hotelId       String?
+  restaurantId  String?
+  transportId   String?
+  packageId     String?
+  rating        Int      // 1-5
+  comment       String
+  images        String?  // JSON array
+  isVerified    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  user        User         @relation(fields: [userId], references: [id])
+  destination Destination? @relation(fields: [destinationId], references: [id])
+  hotel       Hotel?       @relation(fields: [hotelId], references: [id])
+  restaurant  Restaurant?  @relation(fields: [restaurantId], references: [id])
+  transport   Transport?   @relation(fields: [transportId], references: [id])
+  package     TravelPackage? @relation(fields: [packageId], references: [id])
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  userId      String
+  points      Int
+  type        String   // earned | redeemed | bonus
+  description String
+  expiresAt   DateTime?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
