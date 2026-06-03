@@ -48,14 +48,6 @@ const STATS = [
   { value: '6', label: 'Languages', icon: Globe },
 ];
 
-const SEARCH_EXAMPLES = [
-  { label: 'Coorg coffee trail', icon: '☕' },
-  { label: 'Hampi ruins', icon: '🏛️' },
-  { label: 'Wayanad trek', icon: '🌿' },
-  { label: 'Gokarna beach', icon: '🌊' },
-  { label: 'Agumbe rainforest', icon: '🌧️' },
-];
-
 const QUICK_LINKS = [
   { label: 'Hotels', icon: '🏨', href: '/hotels', color: 'from-blue-500/20 to-blue-600/10 border-blue-200 text-blue-700' },
   { label: 'Cuisine', icon: '🍛', href: '/cuisine', color: 'from-amber-500/20 to-amber-600/10 border-amber-200 text-amber-700' },
