@@ -37,6 +37,15 @@ export default function Dashboard() {
     fetchRewards();
   }, [user]);
 
+  useEffect(() => {
+    const onBookingCreated = () => {
+      fetchBookings();
+      fetchRewards();
+    };
+    window.addEventListener('booking:created', onBookingCreated);
+    return () => window.removeEventListener('booking:created', onBookingCreated);
+  }, []);
+
   async function fetchBookings() {
     setLoadingBookings(true);
     try {
@@ -255,8 +264,12 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(b.bookingDate).toLocaleDateString('en-IN')}</span>
                           {b.checkIn && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />Check-in: {new Date(b.checkIn).toLocaleDateString('en-IN')}</span>}
+                          {b.checkOut && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />Check-out: {new Date(b.checkOut).toLocaleDateString('en-IN')}</span>}
                           <span className="font-semibold text-gray-800">₹{b.totalAmount.toLocaleString()}</span>
                         </div>
+                        {b.specialRequests && (
+                          <p className="mt-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-2.5 py-1.5">Special request: {b.specialRequests}</p>
+                        )}
                       </div>
                     </div>
                     {b.status === 'confirmed' && (

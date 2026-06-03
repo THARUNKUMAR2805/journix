@@ -3,6 +3,7 @@ import { X, Calendar, Users, MessageSquare, CreditCard, Award } from 'lucide-rea
 import api from '../utils/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   type: 'hotel' | 'transport' | 'package';
@@ -14,6 +15,7 @@ interface Props {
 
 export default function BookingModal({ type, itemId, itemName, price, onClose }: Props) {
   const { user, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [people, setPeople] = useState(1);
@@ -41,7 +43,9 @@ export default function BookingModal({ type, itemId, itemName, price, onClose }:
       const res = await api.post('/bookings', payload);
       toast.success(`Booking confirmed! You earned ${res.data.pointsEarned} loyalty points 🎉`);
       if (user) updateUser({ loyaltyPoints: user.loyaltyPoints + (res.data.pointsEarned ?? 0) });
+      window.dispatchEvent(new Event('booking:created'));
       onClose();
+      navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Booking failed');
     }

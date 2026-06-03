@@ -44,16 +44,19 @@ bookingRoutes.post('/', authenticate, async (req: AuthRequest, res: Response): P
     if (data.type === 'hotel' && data.hotelId && data.checkIn && data.checkOut) {
       const hotel = await prisma.hotel.findUnique({ where: { id: data.hotelId } });
       if (!hotel) { res.status(404).json({ error: 'Hotel not found' }); return; }
-      const days = Math.ceil((new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime()) / 86400000);
+      const days = Math.max(1, Math.ceil((new Date(data.checkOut).getTime() - new Date(data.checkIn).getTime()) / 86400000));
       totalAmount = hotel.pricePerNight * days * data.people;
     } else if (data.type === 'transport' && data.transportId) {
       const transport = await prisma.transport.findUnique({ where: { id: data.transportId } });
       if (!transport) { res.status(404).json({ error: 'Transport not found' }); return; }
-      totalAmount = transport.pricePerDay;
+      totalAmount = transport.pricePerDay * data.people;
     } else if (data.type === 'package' && data.packageId) {
       const pkg = await prisma.travelPackage.findUnique({ where: { id: data.packageId } });
       if (!pkg) { res.status(404).json({ error: 'Package not found' }); return; }
       totalAmount = pkg.price * data.people;
+    } else {
+      res.status(400).json({ error: 'Invalid booking payload for selected type' });
+      return;
     }
 
     const booking = await prisma.booking.create({
