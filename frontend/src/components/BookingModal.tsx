@@ -19,6 +19,7 @@ export default function BookingModal({ type, itemId, itemName, price, onClose }:
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [people, setPeople] = useState(1);
+  const [travelDate, setTravelDate] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -33,19 +34,23 @@ export default function BookingModal({ type, itemId, itemName, price, onClose }:
       toast.error('Please select check-in and check-out dates');
       return;
     }
+    if (type !== 'hotel' && !travelDate) {
+      toast.error('Please select your travel date');
+      return;
+    }
     setLoading(true);
     try {
       const payload: Record<string, unknown> = { type, people, specialRequests };
       if (type === 'hotel') { payload.hotelId = itemId; payload.checkIn = checkIn; payload.checkOut = checkOut; }
-      if (type === 'transport') payload.transportId = itemId;
-      if (type === 'package') payload.packageId = itemId;
+      if (type === 'transport') { payload.transportId = itemId; payload.checkIn = travelDate; payload.checkOut = travelDate; }
+      if (type === 'package') { payload.packageId = itemId; payload.checkIn = travelDate; }
 
       const res = await api.post('/bookings', payload);
       toast.success(`Booking confirmed! You earned ${res.data.pointsEarned} loyalty points 🎉`);
       if (user) updateUser({ loyaltyPoints: user.loyaltyPoints + (res.data.pointsEarned ?? 0) });
       window.dispatchEvent(new Event('booking:created'));
       onClose();
-      navigate('/dashboard');
+      navigate('/dashboard?tab=bookings');
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Booking failed');
     }
@@ -76,6 +81,13 @@ export default function BookingModal({ type, itemId, itemName, price, onClose }:
                 <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1"><Calendar className="w-3 h-3" />Check-out</label>
                 <input type="date" min={checkIn || today} value={checkOut} onChange={e => setCheckOut(e.target.value)} className="input-field text-sm" />
               </div>
+            </div>
+          )}
+
+          {type !== 'hotel' && (
+            <div>
+              <label className="text-xs font-medium text-gray-500 mb-1.5 flex items-center gap-1"><Calendar className="w-3 h-3" />Travel Date</label>
+              <input type="date" min={today} value={travelDate} onChange={e => setTravelDate(e.target.value)} className="input-field text-sm" />
             </div>
           )}
 

@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    const res = await api.post('/auth/login', { email, password });
+    const res = await api.post('/auth/login', { email: email.trim(), password });
     const { user: u, token: t } = res.data;
     setUser(u);
     setToken(t);
@@ -63,7 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function register(data: RegisterData) {
-    const res = await api.post('/auth/register', data);
+    const payload = {
+      ...data,
+      name: data.name.trim(),
+      email: data.email.trim(),
+      phone: data.phone?.trim() || undefined,
+    };
+    const res = await api.post('/auth/register', payload);
     const { user: u, token: t } = res.data;
     setUser(u);
     setToken(t);

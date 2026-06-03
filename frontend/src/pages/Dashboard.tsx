@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Package, Award, History, Star, Gift, ChevronRight, Calendar, MapPin, LogOut, Camera } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -22,6 +22,8 @@ const STATUS_COLORS: Record<string, string> = {
 export default function Dashboard() {
   const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab');
   const [tab, setTab] = useState<string>('overview');
   const [bookings, setBookings] = useState<any[]>([]);
   const [rewards, setRewards] = useState<any[]>([]);
@@ -36,6 +38,12 @@ export default function Dashboard() {
     fetchBookings();
     fetchRewards();
   }, [user]);
+
+  useEffect(() => {
+    if (initialTab && TABS.some(t => t.key === initialTab)) {
+      setTab(initialTab);
+    }
+  }, [initialTab]);
 
   useEffect(() => {
     const onBookingCreated = () => {
@@ -140,7 +148,10 @@ export default function Dashboard() {
           {TABS.map(t => (
             <button
               key={t.key}
-              onClick={() => setTab(t.key)}
+              onClick={() => {
+                setTab(t.key);
+                setSearchParams({ tab: t.key });
+              }}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium flex-1 justify-center transition-all ${tab === t.key ? 'bg-primary-500 text-white shadow' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'}`}
             >
               <t.icon className="w-4 h-4" />

@@ -24,15 +24,25 @@ const loginSchema = z.object({
 authRoutes.post('/register', async (req: Request, res: Response): Promise<void> => {
   try {
     const data = registerSchema.parse(req.body);
-    const existing = await prisma.user.findUnique({ where: { email: data.email } });
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const normalizedName = data.name.trim();
+    const normalizedPhone = data.phone?.trim() || undefined;
+
+    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (existing) {
       res.status(400).json({ error: 'Email already registered' });
       return;
     }
     const hashed = await bcrypt.hash(data.password, 12);
     const user = await prisma.user.create({
-      data: { ...data, password: hashed },
-      select: { id: true, name: true, email: true, role: true, language: true, loyaltyPoints: true, avatar: true },
+      data: {
+        name: normalizedName,
+        email: normalizedEmail,
+        password: hashed,
+        language: data.language,
+        phone: normalizedPhone,
+      },
+      select: { id: true, name: true, email: true, role: true, language: true, loyaltyPoints: true, avatar: true, phone: true },
     });
     const token = signToken({ id: user.id, email: user.email, role: user.role });
     // Award welcome bonus
@@ -54,7 +64,8 @@ authRoutes.post('/register', async (req: Request, res: Response): Promise<void> 
 authRoutes.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
     const data = loginSchema.parse(req.body);
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
