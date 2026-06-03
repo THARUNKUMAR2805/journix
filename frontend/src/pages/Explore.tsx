@@ -139,6 +139,45 @@ export default function Explore() {
           </div>
         </div>
 
+        {/* Popular search suggestions */}
+        {!hasFilters && !loading && (
+          <div className="mb-8 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <p className="text-xs font-semibold text-gray-500 mb-3">💡 Popular searches by customers</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: 'Weekend in Coorg', icon: '☕' },
+                { label: 'Hampi heritage tour', icon: '🏛️' },
+                { label: 'Beach escape Gokarna', icon: '🌊' },
+                { label: 'Wayanad wildlife', icon: '🦋' },
+                { label: 'Monsoon trek', icon: '🌧️' },
+                { label: 'Hidden waterfalls', icon: '💧' },
+                { label: 'Coffee estate stay', icon: '🌿' },
+                { label: 'Ancient ruins', icon: '🗿' },
+              ].map(s => (
+                <button
+                  key={s.label}
+                  onClick={async () => {
+                    setSearch(s.label);
+                    setLoading(true);
+                    try {
+                      const qp = new URLSearchParams({ search: s.label });
+                      if (season) qp.set('season', season);
+                      if (trending) qp.set('trending', 'true');
+                      if (lesserKnown) qp.set('lesserKnown', 'true');
+                      const res = await api.get(`/destinations?${qp}`);
+                      setDestinations(res.data.destinations ?? []);
+                    } catch {}
+                    setLoading(false);
+                  }}
+                  className="flex items-center gap-1.5 text-xs px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-full text-gray-600 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700 transition-all"
+                >
+                  {s.icon} {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (

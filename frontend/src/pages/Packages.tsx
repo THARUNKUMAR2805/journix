@@ -84,6 +84,31 @@ export default function Packages() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Customer booking examples */}
+        <div className="mb-8">
+          <p className="text-sm font-semibold text-gray-700 mb-3">🏆 What customers booked this month</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { emoji: '🌿', title: 'Weekend in Coorg', stat: '1,240 bookings', desc: '2 days · Coffee estates, waterfalls, river rafting', mini: true },
+              { emoji: '🏛️', title: 'Hampi Heritage Tour', stat: '890 bookings', desc: '3 days · Ruins, Vittala temple, sunset boulders', mini: false },
+              { emoji: '🌊', title: 'Gokarna Beach Camp', stat: '670 bookings', desc: '2 days · Om Beach, cliff hike, campfire night', mini: true },
+              { emoji: '☕', title: 'Chikmagalur Trek', stat: '540 bookings', desc: '4 days · Mullayanagiri peak, tea trails, mist mornings', mini: false },
+            ].map(pkg => (
+              <button key={pkg.title}
+                onClick={() => { if (pkg.mini) setIsMini(true); else { setIsMini(false); setMaxPrice(''); setMaxDays(''); } }}
+                className="text-left p-4 bg-white border border-gray-100 rounded-2xl hover:border-primary-200 hover:shadow-md transition-all">
+                <div className="text-2xl mb-2">{pkg.emoji}</div>
+                <h4 className="font-bold text-gray-900 text-sm mb-0.5">{pkg.title}</h4>
+                <p className="text-xs text-primary-600 font-semibold mb-1.5">{pkg.stat}</p>
+                <p className="text-xs text-gray-500 leading-relaxed">{pkg.desc}</p>
+                {pkg.mini && (
+                  <span className="inline-flex items-center gap-1 mt-2 text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold">⚡ Mini Package</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (

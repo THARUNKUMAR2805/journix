@@ -94,6 +94,31 @@ export default function Cuisine() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Signature dishes customers are ordering */}
+        <div className="mb-8 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <p className="text-sm font-semibold text-gray-700 mb-3">🔥 Customers are ordering</p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { dish: 'Pandi Curry', icon: '🍖', desc: 'Coorg spiced pork with vinegar' },
+              { dish: 'Jackfruit Biryani', icon: '🍛', desc: 'Wayanad forest-style veg biryani' },
+              { dish: 'Jolada Roti', icon: '🫓', desc: 'Hampi sorghum flatbread with chutney' },
+              { dish: 'Filter Coffee', icon: '☕', desc: 'Estate-fresh Chikmagalur drip coffee' },
+              { dish: 'Prawn Masala', icon: '🦐', desc: 'Gokarna Konkan-style coastal seafood' },
+              { dish: 'Bamboo Chicken', icon: '🌿', desc: 'Slow-cooked inside bamboo over open fire' },
+            ].map(item => (
+              <button
+                key={item.dish}
+                onClick={() => setSearch(item.dish)}
+                className="flex items-center gap-2 px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 hover:bg-amber-50 hover:border-amber-300 transition-all group"
+              >
+                <span>{item.icon}</span>
+                <span className="font-medium">{item.dish}</span>
+                <span className="text-gray-400 group-hover:text-amber-600 hidden sm:inline">· {item.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, MapPin, Star, TrendingUp, Award, Globe, Camera, Utensils, Car, Package, ArrowRight, ChevronRight, Sun, Cloud, Umbrella, Play, Compass, Shield, Zap } from 'lucide-react';
+import { Search, MapPin, Star, TrendingUp, Award, Globe, Camera, Utensils, Car, Package, ArrowRight, ChevronRight, Sun, Cloud, Umbrella, Play, Compass, Shield, Zap, Navigation } from 'lucide-react';
 import { motion } from 'framer-motion';
 import DestinationCard from '../components/DestinationCard';
 import PackageCard from '../components/PackageCard';
@@ -16,6 +16,22 @@ const HERO_SLIDES = [
 
 const SEASON_ICONS = { summer: Sun, winter: Cloud, monsoon: Umbrella, all: Globe };
 
+const SEARCH_EXAMPLES = [
+  { label: 'Coorg coffee trail', icon: '☕' },
+  { label: 'Hampi ruins', icon: '🏛️' },
+  { label: 'Wayanad trek', icon: '🌿' },
+  { label: 'Gokarna beach', icon: '🌊' },
+  { label: 'Agumbe rainforest', icon: '🌧️' },
+];
+
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+}
+
 const FEATURES = [
   { icon: MapPin, title: 'Curated Destinations', desc: 'Hand-picked hidden gems and trending spots by local experts', color: 'from-primary-500 to-orange-500', bg: 'bg-primary-50' },
   { icon: Utensils, title: 'Authentic Cuisine', desc: 'Local eateries, street food, and regional specialties awaiting you', color: 'from-amber-500 to-yellow-500', bg: 'bg-amber-50' },
@@ -30,6 +46,14 @@ const STATS = [
   { value: '1,500+', label: 'Hotels & Stays', icon: Shield },
   { value: '50K+', label: 'Happy Travellers', icon: Star },
   { value: '6', label: 'Languages', icon: Globe },
+];
+
+const SEARCH_EXAMPLES = [
+  { label: 'Coorg coffee trail', icon: '☕' },
+  { label: 'Hampi ruins', icon: '🏛️' },
+  { label: 'Wayanad trek', icon: '🌿' },
+  { label: 'Gokarna beach', icon: '🌊' },
+  { label: 'Agumbe rainforest', icon: '🌧️' },
 ];
 
 const QUICK_LINKS = [
@@ -50,6 +74,8 @@ export default function Home() {
   const [miniPackages, setMiniPackages] = useState<any[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
   const [seasonal, setSeasonal] = useState<{ destinations: any[]; currentSeason: string }>({ destinations: [], currentSeason: 'all' });
+  const [userLocation, setUserLocation] = useState<{ city?: string; state?: string; lat: number; lng: number } | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'found' | 'denied'>('idle');
 
   useEffect(() => {
     const iv = setInterval(() => setHeroIdx(i => (i + 1) % HERO_SLIDES.length), 5000);
@@ -76,6 +102,33 @@ export default function Home() {
     e.preventDefault();
     navigate(`/explore?search=${encodeURIComponent(search)}`);
   };
+
+  useEffect(() => {
+    if (!('geolocation' in navigator)) return;
+    setLocationStatus('loading');
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          );
+          const data = await res.json();
+          setUserLocation({
+            city: data.address?.city || data.address?.town || data.address?.village || data.address?.county,
+            state: data.address?.state,
+            lat: latitude,
+            lng: longitude,
+          });
+          setLocationStatus('found');
+        } catch {
+          setLocationStatus('denied');
+        }
+      },
+      () => setLocationStatus('denied'),
+      { timeout: 8000, maximumAge: 300000 }
+    );
+  }, []);
 
   const slide = HERO_SLIDES[heroIdx];
 
@@ -164,6 +217,20 @@ export default function Home() {
                 </Link>
               ))}
             </div>
+
+            {/* Search suggestion examples */}
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              <span className="text-white/40 text-xs self-center shrink-0">Try:</span>
+              {SEARCH_EXAMPLES.map(ex => (
+                <button
+                  key={ex.label}
+                  onClick={() => navigate(`/explore?search=${encodeURIComponent(ex.label)}`)}
+                  className="text-xs text-white/65 hover:text-white border border-white/20 hover:border-white/50 hover:bg-white/10 px-3.5 py-1.5 rounded-full transition-all"
+                >
+                  {ex.icon} {ex.label}
+                </button>
+              ))}
+            </div>
           </motion.div>
         </div>
 
@@ -200,6 +267,43 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── Location Banner ─────────────────────────────── */}
+      {locationStatus === 'found' && userLocation && (
+        <section className="bg-white border-b border-gray-100 py-4">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-primary-50 rounded-xl flex items-center justify-center shrink-0">
+                  <Navigation className="w-4 h-4 text-primary-500" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    📍 Your location: {[userLocation.city, userLocation.state].filter(Boolean).join(', ')}
+                  </p>
+                  <p className="text-xs text-gray-500">Destinations closest to you</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {destinations
+                  .filter(d => d.latitude != null && d.longitude != null)
+                  .map(d => ({ ...d, dist: haversineKm(userLocation.lat, userLocation.lng, d.latitude, d.longitude) }))
+                  .sort((a, b) => a.dist - b.dist)
+                  .slice(0, 3)
+                  .map(d => (
+                    <Link key={d.id} to={`/destinations/${d.id}`}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 hover:bg-primary-100 border border-primary-100 rounded-xl text-xs text-primary-700 font-medium transition-all">
+                      <MapPin className="w-3 h-3" />
+                      {d.name}
+                      <span className="text-primary-400">· {d.dist} km</span>
+                    </Link>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Features – Bento Grid ─────────────────────────────── */}
       <section className="py-24 bg-white relative">

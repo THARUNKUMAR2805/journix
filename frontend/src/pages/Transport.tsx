@@ -76,6 +76,40 @@ export default function Transport() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Popular trip ideas */}
+        <div className="mb-8">
+          <p className="text-sm font-semibold text-gray-700 mb-3">🗺️ Popular trip ideas from customers</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                icon: '🚗', title: 'Coorg Day Trip', price: '~₹2,500/day',
+                desc: 'Private taxi from Bengaluru to Abbey Falls & Raja\'s Seat and back by evening.',
+                type: 'taxi', tagColor: 'bg-blue-100 text-blue-700',
+              },
+              {
+                icon: '🛺', title: 'Hampi Ruins Hop', price: '~₹800/day',
+                desc: 'Auto rickshaw tour around Virupaksha temple, Vittala complex, and Matanga hill.',
+                type: 'auto', tagColor: 'bg-amber-100 text-amber-700',
+              },
+              {
+                icon: '⛵', title: 'Wayanad River Cruise', price: '~₹1,200/day',
+                desc: 'Boat ride through Kabini backwaters — spot elephants, deer, and kingfishers.',
+                type: 'boat', tagColor: 'bg-teal-100 text-teal-700',
+              },
+            ].map(trip => (
+              <button key={trip.title} onClick={() => setTypeFilter(trip.type)}
+                className="text-left p-4 bg-white border border-gray-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-2xl">{trip.icon}</span>
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${trip.tagColor}`}>{trip.price}</span>
+                </div>
+                <h4 className="font-bold text-gray-900 text-sm mb-1 group-hover:text-blue-600 transition-colors">{trip.title}</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">{trip.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (

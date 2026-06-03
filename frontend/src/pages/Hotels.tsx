@@ -97,6 +97,40 @@ export default function Hotels() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Stay inspiration cards */}
+        <div className="mb-8">
+          <p className="text-sm font-semibold text-gray-700 mb-3">💡 Guests are loving</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                icon: '🏡', title: 'Authentic Homestay', tag: 'Most Loved',
+                desc: 'Live with local families in Coorg — home-cooked meals, coffee estate walks, and real Karnataka culture.',
+                filter: 'homestay', tagColor: 'bg-green-100 text-green-700',
+              },
+              {
+                icon: '🏝️', title: 'Resort Retreat', tag: 'Best Value',
+                desc: 'Luxury resorts in Wayanad with infinity pools, spa, and jungle-view suites from ₹4,500/night.',
+                filter: 'resort', tagColor: 'bg-blue-100 text-blue-700',
+              },
+              {
+                icon: '🛏️', title: 'Backpacker Hostel', tag: 'Budget Pick',
+                desc: 'Hostel dorms in Hampi — meet fellow travellers, join guided ruins tours. Beds from ₹600/night.',
+                filter: 'hostel', tagColor: 'bg-amber-100 text-amber-700',
+              },
+            ].map(card => (
+              <button key={card.title} onClick={() => setType(card.filter)}
+                className="text-left p-4 bg-white border border-gray-100 rounded-2xl hover:border-primary-200 hover:shadow-md transition-all group">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">{card.icon}</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${card.tagColor}`}>{card.tag}</span>
+                </div>
+                <h4 className="font-bold text-gray-900 text-sm mb-1 group-hover:text-primary-600 transition-colors">{card.title}</h4>
+                <p className="text-xs text-gray-500 leading-relaxed">{card.desc}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
